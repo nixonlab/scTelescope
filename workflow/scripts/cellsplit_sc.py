@@ -23,7 +23,7 @@ def split_bam_by_cell_barcode(bamfile, selected_barcodes_file, dest, log, barcod
     file_handles = {} #dictionaries of filehandles
     reads_per_umis = defaultdict(set) #umis counter per cell
     reads_per_barcode = Counter() #count how many barcodes
-    data_name,extension = os.path.basename(bamfile).split('.')
+    # data_name,extension = os.path.basename(bamfile).split('.')
     selected_barcodes = set(pd.read_csv(selected_barcodes_file, header=None)[0].tolist()) #read the selected barcodes and turn them into a list
 
 

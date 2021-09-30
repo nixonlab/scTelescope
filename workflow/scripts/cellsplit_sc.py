@@ -18,8 +18,6 @@ def split_bam_by_cell_barcode(bamfile, selected_barcodes_file, dest, log, barcod
 
     import pandas as pd
 
-
-
     bam_in = pysam.AlignmentFile(bamfile) #creates AlignmentFile object
     bam_header = str(bam_in.header).strip() #get the header for the large bamfile
     file_handles = {} #dictionaries of filehandles
@@ -30,10 +28,9 @@ def split_bam_by_cell_barcode(bamfile, selected_barcodes_file, dest, log, barcod
     extension = os.path.basename(bamfile).split('.')[-1]
     selected_barcodes = set(pd.read_csv(selected_barcodes_file, header=None)[0].tolist()) #read the selected barcodes and turn them into a list
 
-
-
     if not os.path.exists(dest): #Make directories if they dont exists
         os.makedirs(dest) #if not, create corresponding directories
+
 
     for read in bam_in.fetch(until_eof=True):#For each read in bamfile
         if(read.has_tag(barcode_tag) and read.has_tag(umicode_tag)): # if the read has the selected barcode
@@ -59,6 +56,13 @@ def split_bam_by_cell_barcode(bamfile, selected_barcodes_file, dest, log, barcod
 
 
     ##########
+    #Create File of Filenames
+    # fofn_path = '/'.join(os.path.abspath(log).split('/')[0:-1])+'/sam_filenames.fofn'
+    fofn_path = os.path.join(dest,'sam_filenames.fofn')
+    # print(fofn_path)
+    fofn = open(fofn_path, 'w')
+    # exit()
+
     # Print report to the log to either file/sterr
     if log is None:
         outh = sys.stderr #print log to stderr
@@ -70,8 +74,11 @@ def split_bam_by_cell_barcode(bamfile, selected_barcodes_file, dest, log, barcod
         # print(barcode)
         n_umis_per_cell = len(set(reads_per_umis[barcode]))
         print(barcode+'\t'+str(reads_per_barcode[barcode])+'\t'+str(n_umis_per_cell)+'\t'+str(file_handles[barcode]),file=outh)
+        sam_filename = str(file_handles[barcode]).split('/')[-1]
+        print(sam_filename,file=fofn) #print the filename
     #     # print('%s\t%d\t%d' % (barcode, float(n_reads_per_cell[barcode]), paths[barcode]), file=outh)
     # #Close the log
+    fofn.close()
     if log is not None:
         outh.close()
 ############################################
@@ -92,8 +99,8 @@ if snakemake_flag:
 #If not snakemake get parameters from command line
 elif __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='''Split a BAM file by cell barcode. It is assmued that the cell
-                       barcode has been added to the read name'''
+        description='''Split a BAM file by single cell barcode. It is assmued that the cell
+                       has barcode in the 'BC' tag '''
     )
 
     parser.add_argument("--bam",

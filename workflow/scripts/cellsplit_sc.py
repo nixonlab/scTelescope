@@ -18,12 +18,16 @@ def split_bam_by_cell_barcode(bamfile, selected_barcodes_file, dest, log, barcod
 
     import pandas as pd
 
+
+
     bam_in = pysam.AlignmentFile(bamfile) #creates AlignmentFile object
     bam_header = str(bam_in.header).strip() #get the header for the large bamfile
     file_handles = {} #dictionaries of filehandles
     reads_per_umis = defaultdict(set) #umis counter per cell
     reads_per_barcode = Counter() #count how many barcodes
-    data_name,extension = os.path.basename(bamfile).split('.')
+    # data_name,extension = os.path.basename(bamfile).split('.')
+    data_name = '.'.join(os.path.basename(bamfile).split('.')[0:-1])
+    extension = os.path.basename(bamfile).split('.')[-1]
     selected_barcodes = set(pd.read_csv(selected_barcodes_file, header=None)[0].tolist()) #read the selected barcodes and turn them into a list
 
 
